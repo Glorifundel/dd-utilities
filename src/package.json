@@ -1,0 +1,8 @@
+{
+  "version": "1.0.0",
+  "name": "dd-utilities",
+  "description": "This library provides a small set of utility functions that address common issues/manipulates plain old javascript objects (POJO)",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}

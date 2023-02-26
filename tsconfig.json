@@ -1,0 +1,25 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "declaration": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "removeComments": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "outDir": "./dist",
+    "target": "es6",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "lib": ["dom", "es6", "es7", "esnext"],
+    "sourceMap": true,
+    "baseUrl": "./",
+    "paths": {
+      "@root/*": ["./src/*"],
+      "@arrays/*": ["./src/arrays/*"],
+      "@objects/*": ["./src/objects/*"],
+      "@promises/*": ["./src/promises/*"]
+    }
+  },
+  "include": ["./src/**/*", "./types/*.d.ts", "spec"]
+}
