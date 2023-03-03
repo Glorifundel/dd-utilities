@@ -1,2 +1,6 @@
+export * from './array'
 export * from './clone'
 export * from './comparison'
+export * from './merge'
+export * from './promise'
+export * from './string'

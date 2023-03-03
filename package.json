@@ -1,23 +1,11 @@
 {
   "name": "dd-utilities (development)",
-  "version": "1.0.0",
-  "private": true,
   "description": "Darkness Descending's utility library",
   "scripts": {
-    "configuration": "node ./output/configuration.js",
     "test": "jasmine",
-    "build": "tsc -p ./tsconfig.json --watch",
-    "copy": "node ./scripts/copy.js source=./src target=./output exclude=.ts,.tsx",
-    "pack": "cd ./output && npm pack",
-    "movepackage": "node ./scripts/copy.js source=./output target=./packages include=.tgz delete=true",
-    "startold": "tsc && npm run copy && npm run pack && npm run movepackage",
-    "example": "node ./output/example.js",
-    "start": "node ./output/server.js",
-    "pmlive": "pm2 start pm2config.json",
-    "pmup": "pm2 start pm2config.json",
-    "pmkill": "pm2 kill",
-    "pmdown": "pm2 kill",
-    "pmtemp": "pm2 serve ./temp/"
+    "build": "tsc -p ./tsconfig.json",
+    "pack": "npx copyfiles -u 1 src/*.json src/*.md dist && npm run build && cd ./dist && npm pack && cd ../ && npx copyfiles -u 1 dist/*.tgz packages",
+    "watch": "tsc -p ./tsconfig.json --watch"
   },
   "engines": {
     "node": "16.13.2"

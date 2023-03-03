@@ -6,7 +6,8 @@ describe('Clone() ', () => {
   it('object - simple', () => {
     const a = { hi: 'there', friends: [{ name: 'one' }, { name: 'two' }] }
     const b = Clone(a)
-    expect(a === b).toBeFalse()
     expect(Same(a, b)).toBeTrue()
+    expect(a === b).toBeFalse()
+    expect(a.friends[0] === b.friends[0]).toBeFalse()
   })
 })
