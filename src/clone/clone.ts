@@ -2,7 +2,7 @@ type Refs = WeakMap<any, any>
 
 export interface CloneOptions {
   depth?: number
-  path?: Array<any>
+  path?: string[]
 }
 
 /**
@@ -40,32 +40,40 @@ export function Clone<T>(obj: T, options?: CloneOptions): T {
 }
 
 function CloneAll(obj: any, depth: number, refs: Refs): any {
+  if (depth < 0) {
+    return obj
+  }
+  depth -= 1
+  if (refs.has(obj)) {
+    return refs.get(obj)
+  }
   if (typeof obj === 'object' && obj !== null) {
-    if (refs.has(obj)) {
-      return refs.get(obj)
-    } else if (Array.isArray(obj)) {
-      const clone = depth > 0 ? CloneArray(obj, depth - 1, refs) : [...obj]
-      refs.set(obj, clone)
-      return clone
-    } else if (obj instanceof Date) {
-      const clone = new Date(obj)
-      refs.set(obj, clone)
-      return clone
-    } else if (obj instanceof Map) {
-      const clone = depth > 0 ? CloneMap(obj, depth - 1, refs) : new Map(obj)
-      refs.set(obj, clone)
-      return clone
-    } else if (obj instanceof Set) {
-      const clone = depth > 0 ? CloneSet(obj, depth - 1, refs) : new Set(obj)
-      refs.set(obj, clone)
-      return clone
-    } else if (obj instanceof RegExp) {
-      return obj
-    } else {
-      const clone = depth > 0 ? CloneObj(obj, depth - 1, refs) : { ...obj }
+    if (Array.isArray(obj)) {
+      const clone = CloneArray(obj, depth, refs)
       refs.set(obj, clone)
       return clone
     }
+    if (obj instanceof Date) {
+      const clone = new Date(obj)
+      refs.set(obj, clone)
+      return clone
+    }
+    if (obj instanceof Map) {
+      const clone = CloneMap(obj, depth, refs)
+      refs.set(obj, clone)
+      return clone
+    }
+    if (obj instanceof Set) {
+      const clone = CloneSet(obj, depth, refs)
+      refs.set(obj, clone)
+      return clone
+    }
+    if (obj instanceof RegExp) {
+      return obj
+    }
+    const clone = CloneObj(obj, depth, refs)
+    refs.set(obj, clone)
+    return clone
   }
   return obj
 }
@@ -82,62 +90,68 @@ function CloneAll(obj: any, depth: number, refs: Refs): any {
  * @param(depth) allows for deep cloning to a specific level, default is infinity.
  * @param(path) the key path to the child you want to clone
  */
-function ClonePath(obj: any, depth: number, path: Array<any>, refs: Refs): any {
-  if (path.length > 0) {
-    if (typeof obj === 'object' && obj !== null) {
-      if (refs.has(obj)) {
-        return refs.get(obj)
-      } else if (Array.isArray(obj)) {
-        const clone = obj.map((value, index) => {
-          if (index === path[0]) {
-            return ClonePath(value, depth, path.slice(1), refs)
-          }
-          return value
-        })
-        refs.set(obj, clone)
-        return clone
-      } else if (obj instanceof Date) {
-        const clone = new Date(obj)
-        refs.set(obj, clone)
-        return clone
-      } else if (obj instanceof Map) {
-        const clone = new Map(obj)
-        const key = path[0]
-        const value = obj.get(key)
-        if (key && value) {
-          clone.set(key, ClonePath(value, depth, path.slice(1), refs))
-        }
-        refs.set(obj, clone)
-        return clone
-      } else if (obj instanceof Set) {
-        const clone = new Set()
-        const value = path[0]
-        obj.forEach((item: any) => {
-          if (value === item) {
-            clone.add(ClonePath(item, depth, path.slice(1), refs))
-          } else {
-            clone.add(item)
-          }
-        })
-        refs.set(obj, clone)
-        return clone
-      } else if (obj instanceof RegExp) {
-        return obj
-      } else {
-        const clone = { ...obj }
-        const key = path[0]
-        const value = obj[key]
-        if (key && value) {
-          clone[key] = ClonePath(value, depth, path.slice(1), refs)
-        }
-        refs.set(obj, clone)
-        return clone
-      }
-    }
-  } else {
+function ClonePath(obj: any, depth: number, path: string[], refs: Refs): any {
+  if (refs.has(obj)) {
+    return refs.get(obj)
+  }
+  const property = path[0]
+  if (typeof property !== 'string') {
     return CloneAll(obj, depth, refs)
   }
-  return obj
+  path = path.slice(1)
+  if (depth < 0) {
+    return obj
+  }
+  if (typeof obj === 'object' && obj !== null) {
+    depth -= 1
+    if (Array.isArray(obj)) {
+      const clone = obj.map((value, index) => {
+        if (index.toString() === property) {
+          return ClonePath(value, depth, path, refs)
+        }
+        return value
+      })
+      refs.set(obj, clone)
+      return clone
+    }
+    if (obj instanceof Date) {
+      const clone = new Date(obj)
+      refs.set(obj, clone)
+      return clone
+    }
+    if (obj instanceof Map) {
+      const clone = new Map(obj)
+      const value = obj.get(property)
+      if (value) {
+        clone.set(property, ClonePath(value, depth, path, refs))
+      }
+      refs.set(obj, clone)
+      return clone
+    }
+    if (obj instanceof Set) {
+      const clone = new Set()
+      obj.forEach((item: any) => {
+        if (property === item) {
+          clone.add(ClonePath(item, depth, path, refs))
+        } else {
+          clone.add(item)
+        }
+      })
+      refs.set(obj, clone)
+      return clone
+    }
+    if (obj instanceof RegExp) {
+      return obj
+    }
+    const clone = { ...obj }
+    const value = obj[property]
+    if (value) {
+      clone[property] = ClonePath(value, depth, path, refs)
+    }
+    refs.set(obj, clone)
+    return clone
+  }
+  return CloneAll(obj, depth, refs)
 }
 
 function CloneSet(obj: Set<any>, depth: number, refs: Refs): Set<any> {
@@ -162,9 +176,9 @@ function CloneMap(
 
 function CloneObj(obj: any, depth: number, refs: Refs): any {
   const clone: any = {}
-  Object.keys(obj).forEach(key => {
+  for (const key of Object.keys(obj)) {
     clone[key] = CloneAll(obj[key], depth, refs)
-  })
+  }
   return clone
 }
 

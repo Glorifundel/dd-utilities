@@ -16,13 +16,23 @@ POJO - Plain old javascript object
 
 - `Chunk<T>(array: T[], size = 100): T[][]`
 
-  Split up an array of values into smaller chunks. It returns an array of arrays which will be of the size specified (or smaller if there is a remainder)
+  Split up an array of values into smaller chunks. It returns an array of arrays which will be of the size specified (the last chunk in the array will be smaller than the specified size in the event of a remainder )
 
 - `Clone<T>(obj: T, options?: CloneOptions): T`
 
   The `Clone()` function creates unique objects and arrays at depth for any POJO. This allows you to ensure you are dealing with a fully unique object. Intended for use with simple data structures (it does not copy functions or class instances)
 
-- `function Pad(num: number, max: number, value: string, radix?: number): string`
+  options:
+
+  - `depth` - positive integer - indicates how many logical levels of depth to clone for a given object. This allows you to stop cloning at a certain point, and just pass back the contents as is. By default the Clone() operations depth is set to Infinity.
+
+  - `path` - string[] - allows you to specify a static key path to clone. This can be used if you only need to clone a specific section of an object.
+
+- `Merge<T>(item1: T, item2: T): T`
+
+  Merge two items of the same type together. It follows a replacement strategy where properties of `item2` take precedence over the properties of `item1`
+
+- `Pad(num: number, max: number, value: string, radix?: number): string`
 
   Pads a number with a value, useful when you have a display string that must be a certain length.
 
@@ -71,6 +81,18 @@ const chunks = Chunk(original,4)
   // [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15]]
 ```
 
+- Merge two objects
+
+```
+import {Merge} from 'dd-utilities
+
+const item1 = {version: '1', towns: ['Springfield','Medway','Danvers'], players: {}}
+const item2 = {version: '2', towns: ['Happy Valley','Hana'], players: {player1: 'bill', player2: 'jill'}}
+
+const merged = Merge(item1, item2)
+  // {version: '2', towns: ['Springfield','Medway','Danvers'], players: {player1: 'bill', player2: 'jill'}}
+```
+
 - Pad a number
 
 ```
@@ -108,7 +130,7 @@ Sequential(sequence).then(result => {
 
 ## 1.1.0
 
-Updated
+Documentation updated, previous readme was missing a number of available functions and their purposes.
 
 ## 1.0.0
 

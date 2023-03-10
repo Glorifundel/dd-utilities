@@ -10,7 +10,7 @@
  */
 export function Merge<T>(item1: T, item2: T): T {
   if (item1 === item2) {
-    return item1
+    return item2
   }
   if (item1 === void 0 || item1 === null) {
     return item2
